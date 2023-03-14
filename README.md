@@ -41,7 +41,7 @@ python app.py
 ## 👥 Grupo
 
 - [Dayane Lira (dls6)](https://github.com/deyenelira)
-- Gabriel Silva (gso)
+- [Gabriel Silva (gso)](https://github.com/gso1)
 - [João Guilherme (jgmsf)](https://github.com/JoaoGMSF)
 - [José Marcondes (jmbj2)](https://github.com/mallocaholic)
 - [Maria Eduarda (mevm)](https://github.com/eduardaveras)
