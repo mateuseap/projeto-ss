@@ -1,9 +1,21 @@
+import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as plt_patches
 from scipy.signal import fftconvolve
 from scipy.ndimage import sobel, gaussian_filter
-from constants import MAX_RADIUS, MIN_RADIUS, RADIUS_STEP, ANNULUS_WIDTH, EDGE_THRESHOLD, NEG_INTERIOR_WEIGHT
+from constants import RADIUS_STEP, ANNULUS_WIDTH, EDGE_THRESHOLD, NEG_INTERIOR_WEIGHT
+
+MAX_RADIUS = 150
+MIN_RADIUS = 75
+
+title_placeholder = st.empty()
+
+max_radius_slider_value = st.slider("Selecione o valor do **RAIO MÁXIMO** da bola a ser detectada:", 10, 1000, MAX_RADIUS)
+min_radius_slider_value = st.slider("Selecione o valor do **RAIO MÍNIMO** da bola a ser detectada:", 1, 700, MIN_RADIUS)
+
+MAX_RADIUS = max_radius_slider_value
+MIN_RADIUS = min_radius_slider_value
 
 def _detectEdges(image, threshold):
     image = sobel(image, 0)**2 + sobel(image, 1)**2 
@@ -36,7 +48,7 @@ def _detectCircles(image, radii, annulus_width):
 
     return acc
 
-def _displayResults(image, edges, center, radius, output=None):
+def _displayResults(image, edges, center, radius):
     plt.gray()
     fig = plt.figure(1)
     fig.clf()
@@ -53,14 +65,8 @@ def _displayResults(image, edges, center, radius, output=None):
     plt.gca().add_patch(blob_circ)
     
     plt.axis('image')
-
-    if output:
-        plt.savefig(output)
-        
-    plt.draw()
-    plt.show()
     
-    return
+    return fig
 
 def _topNCircles(acc, radii, n):
     maxima = []
@@ -79,12 +85,11 @@ def _topNCircles(acc, radii, n):
         
     return (circle_x, circle_y), radius
 
-def DetectCircleFromFile(filename, show_result=False):
-    image = plt.imread(filename)
-    center, radius = DetectCircle(image, True, show_result)
-    return center, radius
+def DetectCircleFromFile(image):
+    output_img = DetectCircle(image, True)
+    return output_img
 
-def DetectCircle(image, preprocess=False, show_result=False):
+def DetectCircle(image, preprocess=False):
     if preprocess:
         if image.ndim > 2:
             image = np.mean(image, axis=2)
@@ -98,14 +103,33 @@ def DetectCircle(image, preprocess=False, show_result=False):
     radii = np.arange(MIN_RADIUS, MAX_RADIUS, RADIUS_STEP)
     acc = _detectCircles(edges, radii, ANNULUS_WIDTH)
     center, radius = _topNCircles(acc, radii, 1)
-    
-    if show_result:
-        _displayResults(image, edges, center, radius)
-                        
-    return center, radius
 
-def test():
-    DetectCircleFromFile('images\christmasBall.jpg', True)
+    output_image = _displayResults(image, edges, center, radius)
+    return output_image
         
-if __name__ == "__main__":
-    test()
+def app():
+    title_placeholder.title("Detector de bolas natalinas")
+
+    uploaded_image = st.file_uploader("Escolha uma imagem...", type=["jpg", "jpeg", "png"])
+
+    image_placeholder = st.empty()
+    upload_success_message_placeholder = st.empty()
+    output_image_placeholder = st.empty()
+    detect_success_message_placeholder = st.empty()
+
+    detect_button = st.button("Detectar")
+
+    if uploaded_image is not None:
+        upload_success_message_placeholder.success("Imagem carregada com sucesso!")
+        image_placeholder.image(uploaded_image)
+
+    if detect_button and uploaded_image is not None:
+        upload_success_message_placeholder.empty()
+        image = plt.imread(uploaded_image)
+        output_image = DetectCircleFromFile(image)
+
+        if output_image is not None:
+            output_image_placeholder.pyplot(output_image)
+            detect_success_message_placeholder.success("Detecção concluída!")
+
+app()
