@@ -4,7 +4,7 @@
 
 Antes de rodar este projeto na sua máquina, é necessário que você tenha as seguintes ferramentas instaladas:
 
-- [Python v3.10.5](https://www.python.org/downloads/release/python-3105/)
+- [Python v3.11.0](https://www.python.org/downloads/release/python-3110/)
 
 Além disso, você vai precisar clonar esse repositório:
 
@@ -25,18 +25,22 @@ Para rodar o projeto localmente, primeiro você vai precisar criar um **virtual 
 python -m venv env
 
 ## Ativando o virtual environment
-.\env\Scripts\activate
+. venv/bin/activate
 ```
 
-Após isso, você estará com o **virtual environment** ativo! Por fim, basta instalar as dependências do projeto e rodar o código:
+Após isso, você estará com o **virtual environment** ativo! Por fim, basta instalar as dependências do projeto e rodar a aplicação:
 
 ```bash
 ## Instalando as dependências
-pip install -r .\requirements.txt
+pip install -r requirements.txt
 
 ## Rodando o código do projeto
-python app.py
+streamlit run app.py
 ```
+
+Após executar os comandos acima, a aplicação irá ser aberta no seu navegador! Caso isso não aconteça automaticamente, acesse [http://localhost:8501/](http://localhost:8501/).
+
+![image](https://i.imgur.com/ZuYKSPc.png)
 
 ## 👥 Grupo
 
