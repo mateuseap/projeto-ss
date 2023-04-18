@@ -17,7 +17,7 @@ min_radius_slider_value = st.slider("Selecione o valor do **RAIO MÍNIMO** da bo
 MAX_RADIUS = max_radius_slider_value
 MIN_RADIUS = min_radius_slider_value
 
-def _detectEdges(image, threshold):
+def detect_edges(image, threshold):
     image = sobel(image, 0)**2 + sobel(image, 1)**2 
     image -= image.min()
     
@@ -26,7 +26,7 @@ def _detectEdges(image, threshold):
         
     return image
 
-def _makeAnnulusKernel(outer_radius, annulus_width):
+def make_annulus_kernel(outer_radius, annulus_width):
     grids = np.mgrid[-outer_radius:outer_radius+1, -outer_radius:outer_radius+1]
 
     kernel_template = grids[0]**2 + grids[1]**2
@@ -39,16 +39,16 @@ def _makeAnnulusKernel(outer_radius, annulus_width):
     annulus = outer_circle - inner_circle
     return annulus
 
-def _detectCircles(image, radii, annulus_width):
+def detect_circles(image, radii, annulus_width):
     acc = np.zeros((radii.size, image.shape[0], image.shape[1]))
 
     for i, r in enumerate(radii):
-        C = _makeAnnulusKernel(r, annulus_width)
+        C = make_annulus_kernel(r, annulus_width)
         acc[i,:,:] = fftconvolve(image, C, 'same')
 
     return acc
 
-def _displayResults(image, edges, center, radius):
+def display_results(image, edges, center, radius):
     plt.gray()
     fig = plt.figure(1)
     fig.clf()
@@ -68,7 +68,7 @@ def _displayResults(image, edges, center, radius):
     
     return fig
 
-def _topNCircles(acc, radii, n):
+def top_n_circles(acc, radii, n):
     maxima = []
     max_positions = []
     max_signal = 0
@@ -85,26 +85,26 @@ def _topNCircles(acc, radii, n):
         
     return (circle_x, circle_y), radius
 
-def DetectCircleFromFile(image):
-    output_img = DetectCircle(image, True)
+def detect_circle_from_file(image):
+    output_img = detect_circle(image, True)
     return output_img
 
-def DetectCircle(image, preprocess=False):
+def detect_circle(image, preprocess=False):
     if preprocess:
         if image.ndim > 2:
             image = np.mean(image, axis=2)
         
         image = gaussian_filter(image, 2)
         
-        edges = _detectEdges(image, EDGE_THRESHOLD)
+        edges = detect_edges(image, EDGE_THRESHOLD)
         edge_list = np.array(edges.nonzero())
         density = float(edge_list[0].size)/edges.size
             
     radii = np.arange(MIN_RADIUS, MAX_RADIUS, RADIUS_STEP)
-    acc = _detectCircles(edges, radii, ANNULUS_WIDTH)
-    center, radius = _topNCircles(acc, radii, 1)
+    acc = detect_circles(edges, radii, ANNULUS_WIDTH)
+    center, radius = top_n_circles(acc, radii, 1)
 
-    output_image = _displayResults(image, edges, center, radius)
+    output_image = display_results(image, edges, center, radius)
     return output_image
         
 def app():
@@ -126,7 +126,7 @@ def app():
     if detect_button and uploaded_image is not None:
         upload_success_message_placeholder.empty()
         image = plt.imread(uploaded_image)
-        output_image = DetectCircleFromFile(image)
+        output_image = detect_circle_from_file(image)
 
         if output_image is not None:
             output_image_placeholder.pyplot(output_image)
